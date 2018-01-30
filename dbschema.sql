@@ -1,8 +1,18 @@
+drop table if exists credentials;
+create table credentials (
+  name varchar(32) not null unique ,
+  access_key varchar(255) not null primary key,
+  secret_key varchar(255) not null
+);
+
+
 drop table if exists streams;
 create table streams (
-  id varchar(32) primary key,
-  credentials text not null,
-  started_at timestamp
+  arn varchar(255) primary key not null,
+  access_key varchar(32) not null,
+  status varchar(16) not null,
+  state_change datetime not null,
+  expiry_time datetime not null
 );
 
 
