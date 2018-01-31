@@ -85,7 +85,7 @@ def get_feeder_config_str(s):
   "firehose.endpoint": "https://firehose.eu-west-1.amazonaws.com",
   "awsAccessKeyId":"{}",
   "awsSecretAccessKey":"{}",
-  "checkpointFile": "{}"
+  "checkpointFile": "{}",
   "flows": [
     {{
       "filePattern": "/tmp/transactions.log*",
