@@ -2,7 +2,13 @@
 {% block body %}
   <ul class=entries>
   {% for entry in entries %}
-    <li><h2>{{ entry.arn }}</h2>{{ entry.status|safe }}
+    <li><h2>{{ entry.arn }}</h2>{{ entry.name|safe }} {{ entry.status|safe }}
+        {% if entry.status == "STOPPED" %}
+            <a href="{{ url_for('start_stream') }}?arn={{entry.arn | urlencode }}">start</a>
+        {% else %}
+            <a href="{{ url_for('stop_stream') }}?arn={{entry.arn | urlencode }}">stop</a>
+            <a href="{{ url_for('extend_expiry') }}?arn={{entry.arn | urlencode }}">extend expiry time</a>
+        {% endif %}
   {% else %}
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
