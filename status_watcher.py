@@ -25,6 +25,16 @@ def get_db():
     return sqlite_db
 
 
+def get_credential(access_key):
+    stream_curr = get_db().execute(
+        'SELECT * FROM credentials WHERE access_key = ?', [access_key])
+    entry = stream_curr.fetchone()
+    if entry is None or len(entry) == 0:
+        return None
+    e_dict = row_dict(entry)
+    return e_dict
+
+
 def get_db_streams():
     stream_curr = get_db().execute(
         'SELECT c.*, s.* FROM streams s INNER JOIN credentials c USING (access_key) ORDER BY name, arn')
@@ -95,13 +105,16 @@ if __name__ == '__main__':
 
                 # If this stream isn't in the DB, add it.
                 if arn not in db_streams:
+                    credential = get_credential(e['access_key'])
                     db_streams[arn] = {
                         'arn': arn,
                         'access_key': e['access_key'],
                         'status': 'STOPPED',
                         'expiry_time': new_expiry_time(),
                         'state_change': datetime.now(),
-                        'name': '==NEW_STREAM=='
+                        'secret_key': credential['secret_key'],
+                        'name': credential['name'],
+                        'feeder_pid': None
                     }
                     changed_streams[arn] = db_streams[arn]
 
