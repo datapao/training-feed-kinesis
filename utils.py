@@ -1,6 +1,9 @@
+import os
 from datetime import datetime, timedelta
 
 import boto3
+import shutil
+
 
 def stream_name(arn):
     try:
@@ -57,6 +60,24 @@ def decode_arn(enc_arn):
     return enc_arn.replace("--SLASH--", "/")
 
 
+def get_feeder_dir(arn):
+    return os.path.dirname(os.path.realpath(__file__)) + "/feeder-config/" + encode_arn(arn)
+
+
+def create_feeder_dir(arn):
+    directory = get_feeder_dir(arn)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    return directory
+
+
+def remove_feeder_dir(arn):
+    config_dir = os.path.dirname(os.path.realpath(__file__)) + "/feeder-config/" + encode_arn(arn)
+    if os.path.isdir(config_dir):
+        shutil.rmtree(config_dir)
+    return config_dir
+
+
 def get_feeder_config_str(s):
     return """{{
   "cloudwatch.emitMetrics": true,
@@ -64,6 +85,7 @@ def get_feeder_config_str(s):
   "firehose.endpoint": "https://firehose.eu-west-1.amazonaws.com",
   "awsAccessKeyId":"{}",
   "awsSecretAccessKey":"{}",
+  "checkpointFile": "{}"
   "flows": [
     {{
       "filePattern": "/tmp/transactions.log*",
@@ -75,4 +97,4 @@ def get_feeder_config_str(s):
     }}
   ]
 }}
-""".format(s["access_key"], s["secret_key"], stream_name(s["arn"]))
+""".format(s["access_key"], s["secret_key"], get_feeder_dir(s['arn']) + "/checkpoint", stream_name(s["arn"]))

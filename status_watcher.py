@@ -48,28 +48,30 @@ def get_db_streams():
 
 
 def start_feed(s):
-    fn = "feeder-config/" + encode_arn(s["arn"]) + ".json"
-    with open(fn, "w") as f:
+    feeder_dir = create_feeder_dir(s['arn'])
+    config_fn = feeder_dir + "/feeder.json"
+    log_fn = feeder_dir + "/feeder.log"
+    with open(config_fn, "w") as f:
         f.write(get_feeder_config_str(s))
 
-    proc = subprocess.Popen(["sleep", "100000"])
+    proc = subprocess.Popen(
+        ["/usr/bin/start-aws-kinesis-agent", "-c", config_fn, "-L", "INFO", "-l", log_fn]
+    )
     return proc.pid
 
 
 def stop_feed(s):
-    fn = "feeder-config/" + encode_arn(s["arn"]) + ".json"
-    if os.path.isfile(fn):
-        os.remove(fn)
-    
     pid = s['feeder_pid']
-    if pid is None:
-        return None
     try:
+        if pid is None:
+            return None
         os.kill(pid, 0)
         os.kill(s['feeder_pid'], signal.SIGTERM)
         return pid
     except OSError:
         return None
+    finally:
+        remove_feeder_dir(s['arn'])
 
 
 if __name__ == '__main__':
