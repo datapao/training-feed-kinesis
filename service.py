@@ -1,4 +1,4 @@
-import os
+import os, sys
 
 from flask import *
 import sqlite3
@@ -9,8 +9,36 @@ app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'memcached'
 app.config['SECRET_KEY'] = 'my super secret key'
 
+from functools import wraps
+from flask import request, Response
+
+
+def check_auth(username, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    return username == app.config['auth_user'] and password == app.config['auth_pass']
+
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response(
+    'Could not verify your access level for that URL.\n'
+    'You have to login with proper credentials', 401,
+    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
 
 @app.route('/')
+@requires_auth
 def show_streams():
     db = get_db()
     cur = db.execute('SELECT c.*, s.* FROM streams s INNER JOIN credentials c USING (access_key) ORDER BY name, arn')
@@ -19,6 +47,7 @@ def show_streams():
 
 
 @app.route('/c', methods=['GET'])
+@requires_auth
 def show_credentials():
     db = get_db()
     cur = db.execute('select * FROM credentials ORDER BY name')
@@ -27,6 +56,7 @@ def show_credentials():
 
 
 @app.route('/c', methods=['POST'])
+@requires_auth
 def add_credential():
     db = get_db()
 
@@ -48,6 +78,7 @@ def add_credential():
 
 
 @app.route('/start')
+@requires_auth
 def start_stream():
     arn = request.args.get('arn')
     stream = get_stream(arn)
@@ -61,6 +92,7 @@ def start_stream():
 
 
 @app.route('/stop')
+@requires_auth
 def stop_stream():
     arn = request.args.get('arn')
     stream = get_stream(arn)
@@ -74,6 +106,7 @@ def stop_stream():
 
 
 @app.route('/extend_expiry')
+@requires_auth
 def extend_expiry():
     arn = request.args.get('arn')
     s = get_stream(arn)
@@ -132,5 +165,11 @@ def printr(s):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 4:
+        print("Usage: {} [port] [http auth username] [http auth password]".format(sys.argv[0]))
+        sys.exit(1)
+
+    app.config['auth_user'] = sys.argv[2]
+    app.config['auth_pass'] = sys.argv[3]
     app.debug = True
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=int(sys.argv[1]))
