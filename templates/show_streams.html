@@ -1,16 +1,30 @@
 {% extends "layout.html" %}
 {% block body %}
-  <ul class=entries>
+  <table class='table'>
+      <thead><tr>
+        <th>user name</th>
+        <th>arn</th>
+        <th>status</th>
+        <th>expiry time</th>
+        <th>actions</th>
+      </tr></thead>
   {% for entry in entries %}
-    <li><h2>{{ entry.arn }}</h2>{{ entry.name|safe }} {{ entry.status|safe }}
+    <tr>
+        <th scope="row">{{ entry.name }}</th>
+        <td style="font-size: 8pt; vertical-align: middle;">{{ entry.arn }}</th>
+        <td>{{ entry.status }}</td>
+        <td>{{ entry.expiry_time }}</td>
+        <td>
         {% if entry.status == "STOPPED" %}
-            <a href="{{ url_for('start_stream') }}?arn={{entry.arn | urlencode }}">start</a>
+            <a class="btn btn-success" role="button" href="{{ url_for('start_stream') }}?arn={{entry.arn | urlencode }}">start</a>
         {% else %}
-            <a href="{{ url_for('stop_stream') }}?arn={{entry.arn | urlencode }}">stop</a>
-            <a href="{{ url_for('extend_expiry') }}?arn={{entry.arn | urlencode }}">extend expiry time</a>
+            <a class="btn btn-danger" role="button" href="{{ url_for('stop_stream') }}?arn={{entry.arn | urlencode }}">stop</a>
+            <a class="btn btn-info" role="button" href="{{ url_for('extend_expiry') }}?arn={{entry.arn | urlencode }}">extend expiry time</a>
         {% endif %}
+        </td>
+    </tr>
   {% else %}
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
-  </ul>
+  </table>
 {% endblock %}

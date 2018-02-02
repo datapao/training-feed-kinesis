@@ -84,8 +84,9 @@ def extend_expiry():
         get_db().execute(
             'UPDATE streams SET expiry_time = ? WHERE arn = ?',
             [s['expiry_time'], s['arn']])
+        get_db().commit()
 
-        flash('Expiry time extended for ' + stream_name(arn))
+        flash('Expiry time extended for {}/{}'.format(s['name'], stream_name(arn)))
 
     return redirect(url_for('show_streams'))
 

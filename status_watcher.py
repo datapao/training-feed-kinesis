@@ -48,6 +48,10 @@ def get_db_streams():
 
 
 def start_feed(s):
+    if not os.path.isfile("/usr/bin/start-aws-kinesis-agent"):
+        print("ERROR: Can't find /usr/bin/start-aws-kinesis-agent", file=sys.stderr)
+        return None
+
     feeder_dir = create_feeder_dir(s['arn'])
     config_fn = feeder_dir + "/feeder.json"
     log_fn = feeder_dir + "/feeder.log"
@@ -65,8 +69,9 @@ def stop_feed(s):
     try:
         if pid is None:
             return None
-        os.kill(pid, 0)
-        os.kill(s['feeder_pid'], signal.SIGTERM)
+        os.kill(pid, 0) # This raises an exception if pid is not running
+        os.killpg(os.getpgid(pid), signal.SIGTERM)
+        # os.kill(s['feeder_pid'], signal.SIGTERM)
         return pid
     except OSError:
         return None
@@ -79,15 +84,13 @@ if __name__ == '__main__':
 
     while True:
         cur = db.execute('select * FROM credentials ORDER BY name')
-        entries = cur.fetchall()
+        db_credentials = map(row_dict, cur.fetchall())
 
         db_streams = get_db_streams()
         changed_streams = {}
         aws_arns = {}
 
-        for e in entries:
-            e = row_dict(e)
-            # print("Fetching data for {} {}".format(e["name"], e["access_key"]))
+        for e in db_credentials:
             client = boto3.client(
                 'kinesis',
                 aws_access_key_id=e["access_key"],
@@ -182,15 +185,15 @@ if __name__ == '__main__':
                     print("{}/{}: AWS:{} OLD:{} NEW:{}".format(db_stream['name'], arn, aws_status, old_db_status,
                                                                changed_streams[arn]['status']))
 
-            # Stop streams that got removed from AWS manually.
-            for arn in db_streams:
-                db_stream = db_streams[arn]
-                if (db_stream['status'] != 'STOPPED') and (arn not in aws_arns):
-                    stop_feed(db_streams[arn])
-                    db_stream['feeder_pid'] = None
-                    db_stream['status'] = 'STOPPED'
-                    changed_streams[arn] = db_stream
-                    print("{}/{}: {} -> {}".format(db_stream['name'], arn, "N/A", changed_streams[arn]['status']))
+        # Stop streams that got removed from AWS manually.
+        for arn in db_streams:
+            db_stream = db_streams[arn]
+            if (db_stream['status'] != 'STOPPED') and (arn not in aws_arns):
+                stop_feed(db_streams[arn])
+                db_stream['feeder_pid'] = None
+                db_stream['status'] = 'STOPPED'
+                changed_streams[arn] = db_stream
+                print("{}/{}: {} -> {}".format(db_stream['name'], arn, "N/A", changed_streams[arn]['status']))
 
         # Update DB
         for arn in changed_streams:
