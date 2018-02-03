@@ -37,6 +37,7 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+
 @app.route('/')
 @requires_auth
 def show_streams():
@@ -70,7 +71,7 @@ def add_credential():
         return printr("Please fill in the access_key")
 
     db.execute('insert into credentials (name, access_key, secret_key) values (?, ?, ?)',
-                 [request.form['name'], request.form['access_key'],  request.form['secret_key']])
+               [request.form['name'], request.form['access_key'].strip(),  request.form['secret_key'].strip()])
 
     db.commit()
     flash('New credential was successfully added')

@@ -3,6 +3,24 @@ from datetime import datetime, timedelta
 
 import boto3
 import shutil
+import random
+
+
+def generate_ibans(num, countries):
+    random.seed(273)
+    for i in range(0, num):
+        country = countries[random.randint(0, len(countries) - 1)]
+        iban = country + \
+               str(random.randint(0,99)).zfill(2) + \
+               " " + \
+               str(random.randint(0, 9999)).zfill(4) + \
+               " " + \
+               str(random.randint(0, 9999)).zfill(4) + \
+               " " + \
+               str(random.randint(0, 9999)).zfill(4) + \
+               " " + \
+               str(random.randint(0, 9999)).zfill(4)
+        yield iban
 
 
 def stream_name(arn):

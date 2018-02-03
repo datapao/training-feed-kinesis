@@ -70,8 +70,7 @@ def stop_feed(s):
         if pid is None:
             return None
         os.kill(pid, 0) # This raises an exception if pid is not running
-        os.killpg(os.getpgid(pid), signal.SIGTERM)
-        # os.kill(s['feeder_pid'], signal.SIGTERM)
+        os.kill(s['feeder_pid'], signal.SIGTERM)
         return pid
     except OSError:
         return None
