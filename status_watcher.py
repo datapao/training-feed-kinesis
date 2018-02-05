@@ -102,6 +102,7 @@ if __name__ == '__main__':
 
             for s in stream_names:
                 stream_description = client.describe_stream_summary(StreamName=s)
+                time.sleep(0.1)
                 # print(stream_description)
                 aws_status = stream_description['StreamDescriptionSummary']['StreamStatus']
                 arn = stream_description['StreamDescriptionSummary']['StreamARN']

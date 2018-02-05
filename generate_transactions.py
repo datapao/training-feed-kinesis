@@ -25,7 +25,7 @@ while True:
     delta_sec = random.gauss(0, 5)
     if delta_sec > 20:
         continue
-    if random.randint(0,9) <= 1 and event_time - datetime.timedelta(seconds=20) > start_time:
+    if random.randint(0,9) == 0 and event_time - datetime.timedelta(seconds=20) > start_time:
         delta_sec = delta_sec / 4 - 60
     event_time = event_time + datetime.timedelta(seconds=delta_sec)
 
@@ -47,10 +47,11 @@ while True:
         break
 
     t = {
-        'timestamp': event_time.isoformat(),
+        'event_time': event_time.isoformat(),
         'iban_from': from_iban,
         'iban_to': to_iban,
         'country': from_country,
+        'country_alpha': alpha3[from_country], 
         'amount_eur': random.randint(10, 100000)
     }
 
