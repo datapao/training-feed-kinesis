@@ -79,6 +79,7 @@ def stop_feed(s):
 
 
 if __name__ == '__main__':
+    print("Status updater started")
     db = get_db()
 
     while True:
