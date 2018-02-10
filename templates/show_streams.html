@@ -10,8 +10,8 @@
       </tr></thead>
   {% for entry in entries %}
     <tr>
-        <th scope="row">{{ entry.name }}</th>
-        <td style="font-size: 8pt; vertical-align: middle;">{{ entry.arn }}</th>
+        <th scope="row">{{ entry.stream_name }}</th>
+        <td style="font-size: 8pt; vertical-align: middle;">{{ entry.name }}</th>
         <td>{{ entry.status }}</td>
         <td>{{ entry.expiry_time }}</td>
         <td>
