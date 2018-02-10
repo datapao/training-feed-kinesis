@@ -85,6 +85,7 @@ if __name__ == '__main__':
     print("Status updater started")
     db = get_db()
 
+    FIRST_RUN = True
     while True:
         cur = db.execute('select * FROM credentials ORDER BY name')
         db_credentials = map(row_dict, cur.fetchall())
@@ -159,6 +160,13 @@ if __name__ == '__main__':
                         db_stream['status'] = 'STARTING'
                         changed_streams[arn] = db_stream
                     elif aws_status == "ACTIVE":
+                        # If the status server got just fired up and there is a stream in RUNNING state,
+                        # Recreate the feeder
+                        if FIRST_RUN:
+                            pid = start_feed(db_stream)
+                            db_stream['feeder_pid'] = pid
+                            db_stream['status'] = 'RUNNING'
+                            changed_streams[arn] = db_stream
                         pass
                     elif aws_status == "DELETING":
                         stop_feed(db_stream)
@@ -224,3 +232,4 @@ if __name__ == '__main__':
         # Sleep for a second at the end of each iteration
         # So we don't exceed the AWS API rate limit
         time.sleep(1)
+        FIRST_RUN=False
