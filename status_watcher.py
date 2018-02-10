@@ -78,6 +78,9 @@ def stop_feed(s):
         remove_feeder_dir(s['arn'])
 
 
+def elog(s):
+    print(s, file=sys.stderr)
+
 if __name__ == '__main__':
     print("Status updater started")
     db = get_db()
