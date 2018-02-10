@@ -42,8 +42,8 @@ def requires_auth(f):
 @requires_auth
 def show_streams():
     db = get_db()
-    cur = db.execute('SELECT c.*, s.*, substr(arn, instr(arn, '/') + 1) as stream_name \
-                      FROM streams s INNER JOIN credentials c USING (access_key) ORDER BY name, arn')
+    cur = db.execute("SELECT c.*, s.*, substr(arn, instr(arn, '/') + 1) as stream_name \
+                      FROM streams s INNER JOIN credentials c USING (access_key) ORDER BY name, arn")
     entries = cur.fetchall()
     return render_template('show_streams.html', entries=entries)
 
