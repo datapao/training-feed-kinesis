@@ -94,20 +94,25 @@ if __name__ == '__main__':
         aws_arns = {}
 
         for e in db_credentials:
-            client = boto3.client(
-                'kinesis',
-                aws_access_key_id=e["access_key"],
-                aws_secret_access_key=e["secret_key"],
-                region_name='eu-west-1'
-            )
+            try:
+                client = boto3.client(
+                    'kinesis',
+                    aws_access_key_id=e["access_key"],
+                    aws_secret_access_key=e["secret_key"],
+                    region_name='eu-west-1'
+                )
 
-            streams_dict = client.list_streams()
+                streams_dict = client.list_streams()
+            except Exception as error:
+                elog("Exception: " + str(error) + str(e))
+                continue
+
             stream_names = streams_dict["StreamNames"]
 
             for s in stream_names:
                 stream_description = client.describe_stream_summary(StreamName=s)
                 time.sleep(0.1)
-                # print(stream_description)
+                print(stream_description)
                 aws_status = stream_description['StreamDescriptionSummary']['StreamStatus']
                 arn = stream_description['StreamDescriptionSummary']['StreamARN']
                 aws_arns[arn] = True

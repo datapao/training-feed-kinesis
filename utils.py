@@ -6,8 +6,11 @@ import shutil
 import random
 
 
-def generate_ibans(num, countries):
-    random.seed(273)
+def generate_ibans(num, countries, reset_seed=True):
+    if reset_seed:
+        random.seed(273)
+    # There is a problem here: using random + yield
+    # But it's ok for this app.
     for i in range(0, num):
         country = countries[random.randint(0, len(countries) - 1)]
         iban = country + \
