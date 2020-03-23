@@ -10,3 +10,8 @@ data/*
 derby.log
 metastore_db
 .DS_Store
+
+checkpoint
+feeder.log*
+
+virtualenv/

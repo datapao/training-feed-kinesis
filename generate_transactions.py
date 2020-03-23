@@ -27,7 +27,7 @@ while True:
         continue
     if random.randint(0,9) == 0 and event_time - datetime.timedelta(seconds=20) > start_time:
         delta_sec = delta_sec / 4 - 60
-    event_time = event_time + datetime.timedelta(seconds=delta_sec)
+    event_time = event_time + datetime.timedelta(seconds=delta_sec - 10)
 
     from_iban = ibans[random.randint(0, len(ibans) - 1)]
     from_iban_country = from_iban[0:2]
